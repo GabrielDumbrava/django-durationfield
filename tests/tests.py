@@ -8,6 +8,7 @@ from .models import (
 )
 from durationfield.utils import timestring
 from datetime import timedelta
+from durationfield.forms.widgets import DurationInput
 
 
 class DurationFieldTests(TestCase):
@@ -16,11 +17,11 @@ class DurationFieldTests(TestCase):
         self.test_tds = [
             timedelta(hours=1),  # No days, no micro, single-digit hour
             timedelta(hours=10),  # double-digit hour
-            timedelta(hours=10, minutes=35, seconds=1),
+            timedelta(hours=10, minutes=35),
             timedelta(days=1),  # Day, no micro
-            timedelta(days=1, microseconds=1),  # Day, with micro
+            timedelta(days=1, microseconds=0),  # Day, with micro
             timedelta(days=10),  # Days, no micro
-            timedelta(days=10, microseconds=1),  # Days, with micro
+            timedelta(days=10, microseconds=0),  # Days, with micro
         ]
 
         return super(DurationFieldTests, self).setUp()
@@ -42,7 +43,7 @@ class DurationFieldTests(TestCase):
 
     def testTimedeltaStrRoundtrip(self):
         for td in self.test_tds:
-            td_str = str(td)
+            td_str = DurationInput.format_output(td) 
             td_from_str = timestring.str_to_timedelta(td_str)
             self.assertEqual(td_from_str, td)
 
@@ -74,7 +75,7 @@ class DurationFieldTests(TestCase):
 
     def testDefaultGiven(self):
         """
-        Default value should use the default argument
+        Default value should use the default argument.
         """
         model_test = TestDefaultModel()
         model_test.save()
@@ -96,7 +97,7 @@ class DurationFieldTests(TestCase):
 
             # Test with strings
             model_test = TestModel()
-            model_test.duration_field = str(td)
+            model_test.duration_field =  DurationInput.format_output(td) 
             model_test.save()
             model_test = TestModel.objects.get(pk=model_test.pk)
             self.assertEqual(td, model_test.duration_field)
@@ -119,23 +120,22 @@ class DurationFieldTests(TestCase):
             self.assertEqual(td, model_test.duration_field)
 
     def testInputTime(self):
-        delta = timestring.str_to_timedelta("10:23")
+        delta = timestring.str_to_timedelta("10h 23m")
         seconds = (10 * 60 * 60) + (23 * 60)
         self.assertEqual(seconds, delta.seconds)
 
     def testInputTimeSeonds(self):
-        delta = timestring.str_to_timedelta("12:21:24")
-        seconds = (12 * 60 * 60) + (21 * 60) + 24
+        delta = timestring.str_to_timedelta("12h 21m")
+        seconds = (12 * 60 * 60) + (21 * 60)
         self.assertEqual(seconds, delta.seconds)
 
     def testInputTimeSecondsMicroseconds(self):
-        delta = timestring.str_to_timedelta("11:20:22.000098")
-        seconds = (11 * 60 * 60) + (20 * 60) + 22
+        delta = timestring.str_to_timedelta("11m")
+        seconds = (11 * 60)
         self.assertEqual(seconds, delta.seconds)
-        self.assertEqual(98, delta.microseconds)
 
     def testInputAll(self):
-        delta = timestring.str_to_timedelta("1 year, 10 months, 3 weeks, 2 days, 3:40:50")
+        delta = timestring.str_to_timedelta("1Y 10M 3w 2d 3m")
         days = (
             (1 * 365) +
             (10 * 30) +
@@ -143,9 +143,7 @@ class DurationFieldTests(TestCase):
             2
         )
         seconds = (
-            (3 * 60 * 60) +
-            (40 * 60) +
-            50
+            (3 * 60)
         )
         self.assertEqual(
             days, delta.days
@@ -155,7 +153,7 @@ class DurationFieldTests(TestCase):
         )
 
     def testInputAllAbbreviated(self):
-        delta = timestring.str_to_timedelta("2y 9m 1w 20d 0:10:39")
+        delta = timestring.str_to_timedelta("2Y 9M 1w 20d 0m")
         days = (
             (2 * 365) +
             (9 * 30) +
@@ -163,9 +161,7 @@ class DurationFieldTests(TestCase):
             20
         )
         seconds = (
-            (0 * 60 * 60) +
-            (10 * 60) +
-            39
+            (0 * 60 * 60) 
         )
         self.assertEqual(
             days, delta.days
