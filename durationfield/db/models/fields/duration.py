@@ -7,7 +7,7 @@ from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_text
 
-from durationfield.utils.timestring import str_to_timedelta
+from durationfield.utils.timestring import str_to_timedelta, timedelta_to_string
 from durationfield.forms.fields import DurationField as FDurationField
 
 try:
@@ -65,7 +65,7 @@ class DurationField(six.with_metaclass(models.SubfieldBase, Field)):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return smart_text(value)
+        return timedelta_to_string(value)
 
     def to_python(self, value):
         """
@@ -99,7 +99,6 @@ class DurationField(six.with_metaclass(models.SubfieldBase, Field)):
         defaults = {'form_class': FDurationField}
         defaults.update(kwargs)
         return super(DurationField, self).formfield(**defaults)
-
 
 if add_introspection_rules:
     # Rules for South field introspection
