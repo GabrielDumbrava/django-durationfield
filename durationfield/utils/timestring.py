@@ -7,6 +7,7 @@ from django.conf import settings
 
 from datetime import timedelta
 import re
+from decimal import Decimal
 
 DAYS_PER_WEEK = getattr(settings, "DAYS_PER_WEEK", 7)
 HOURS_PER_DAY = getattr(settings, "HOURS_PER_DAY", 24)
@@ -56,3 +57,33 @@ def str_to_timedelta(td_str):
         minutes=time_groups["minutes"],
         seconds=0,
         microseconds=0)
+    
+def timedelta_to_string(value):
+    '''
+    Renders the given timedelta as string of format "3w 2d 5h 30m."
+    '''
+    weeks, remainder = divmod(value.total_seconds(), 3600 * HOURS_PER_DAY * DAYS_PER_WEEK)
+    days, remainder = divmod(remainder, 3600 * HOURS_PER_DAY)
+    hours, remainder = divmod(remainder, 3600)  
+    minutes, seconds = divmod(remainder, 60)
+    weeks_str = '' 
+    days_str = '' 
+    hours_str = ''
+    minutes_str = ''
+    if(weeks > 0):     
+        weeks_str = '%dw ' % weeks
+    if (days > 0):
+        days_str = '%dd ' % days
+    if (hours > 0):
+        hours_str = '%dh ' % hours
+    if (minutes > 0):
+        minutes_str = '%dm' % minutes
+    return weeks_str +  days_str + hours_str + minutes_str
+
+def timedelta_to_decimal(value):
+    '''
+    Returns the timedelta as decimal object representing the day value.
+    
+    '''
+    return Decimal(value.total_seconds()) / Decimal(3600 * settings.HOURS_PER_DAY) 
+    
