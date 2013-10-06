@@ -9,6 +9,7 @@ from .models import (
 from durationfield.utils import timestring
 from datetime import timedelta
 from durationfield.forms.widgets import DurationInput
+from durationfield.utils.timestring import timedelta_to_string
 
 
 class DurationFieldTests(TestCase):
@@ -43,7 +44,7 @@ class DurationFieldTests(TestCase):
 
     def testTimedeltaStrRoundtrip(self):
         for td in self.test_tds:
-            td_str = DurationInput.format_output(td) 
+            td_str = timedelta_to_string(td) 
             td_from_str = timestring.str_to_timedelta(td_str)
             self.assertEqual(td_from_str, td)
 
@@ -97,7 +98,7 @@ class DurationFieldTests(TestCase):
 
             # Test with strings
             model_test = TestModel()
-            model_test.duration_field =  DurationInput.format_output(td) 
+            model_test.duration_field =  timedelta_to_string(td) 
             model_test.save()
             model_test = TestModel.objects.get(pk=model_test.pk)
             self.assertEqual(td, model_test.duration_field)
