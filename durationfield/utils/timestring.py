@@ -78,7 +78,8 @@ def timedelta_to_string(value):
         hours_str = '%dh ' % hours
     if (minutes > 0):
         minutes_str = '%dm' % minutes
-    return weeks_str +  days_str + hours_str + minutes_str
+    time_as_str = weeks_str +  days_str + hours_str + minutes_str
+    return time_as_str if not time_as_str == '' else '0h'  
 
 def timedelta_to_decimal(value):
     '''
