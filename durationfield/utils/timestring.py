@@ -58,12 +58,16 @@ def str_to_timedelta(td_str):
         seconds=0,
         microseconds=0)
     
-def timedelta_to_string(value):
+def timedelta_to_string(value, hour_is_max_unit=False):
     '''
     Renders the given timedelta as string of format "3w 2d 5h 30m."
-    '''
-    weeks, remainder = divmod(value.total_seconds(), 3600 * HOURS_PER_DAY * DAYS_PER_WEEK)
-    days, remainder = divmod(remainder, 3600 * HOURS_PER_DAY)
+    '''   
+    weeks = 0
+    days = 0
+    remainder = value.total_seconds()
+    if not hour_is_max_unit:
+        weeks, remainder = divmod(remainder, 3600 * HOURS_PER_DAY * DAYS_PER_WEEK)
+        days, remainder = divmod(remainder, 3600 * HOURS_PER_DAY)
     hours, remainder = divmod(remainder, 3600)  
     minutes, seconds = divmod(remainder, 60)
     weeks_str = '' 

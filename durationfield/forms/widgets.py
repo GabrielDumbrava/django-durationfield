@@ -21,12 +21,25 @@ class DurationInput(TextInput):
 
         final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         if value != '':
-            # Only add the 'value' attribute if a value is non-empty.
-            if isinstance(value, six.integer_types):
-                value = timedelta(microseconds=value)
-
-            # Otherwise, we've got a timedelta already
-
-            final_attrs['value'] = force_text(timedelta_to_string(value))
-        return mark_safe('<input%s />' % flatatt(final_attrs))
+            
+            if isinstance(value, unicode):
+                final_attrs['value'] = force_text(value)
+            else:
+                # Only add the 'value' attribute if a value is non-empty.
+                if isinstance(value, six.integer_types):
+                    value = timedelta(microseconds=value)
     
+                # Otherwise, we've got a timedelta already
+                if final_attrs.has_key('hour_is_max_unit') and final_attrs['hour_is_max_unit']: 
+                    final_attrs['value'] = force_text(timedelta_to_string(value, True))
+                else:  
+                    final_attrs['value'] = force_text(timedelta_to_string(value))
+                
+        return mark_safe('<input%s />' % flatatt(final_attrs))
+
+
+class DurationByHourInput(DurationInput):
+    def render(self, name, value, attrs=None):
+        attrs['hour_is_max_unit'] = True
+        return super(DurationByHourInput, self).render(name, value, attrs)
+
