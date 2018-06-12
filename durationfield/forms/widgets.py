@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.utils import six
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django.forms.widgets import TextInput
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_text
@@ -10,6 +10,7 @@ from durationfield.utils.timestring import timedelta_to_string
 
 DAYS_PER_WEEK = getattr(settings, "DAYS_PER_WEEK", 7)
 HOURS_PER_DAY = getattr(settings, "HOURS_PER_DAY", 24)
+
 
 class DurationInput(TextInput):
     def render(self, name, value, attrs=None):
