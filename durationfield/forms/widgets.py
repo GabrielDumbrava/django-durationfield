@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.utils import six
-from django.forms.utils import flatatt
+try:
+    from django.forms.utils import flatatt
+except ImportError:
+    # Django 1.8 or lower
+    from django.forms.util import flatatt
 from django.forms.widgets import TextInput
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_text
