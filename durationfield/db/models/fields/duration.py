@@ -16,7 +16,7 @@ except ImportError:
     add_introspection_rules = None
 
 
-class DurationField(six.with_metaclass(models.SubfieldBase, Field)):
+class DurationField(Field):
     """
     A duration field is used
     """
@@ -94,6 +94,10 @@ class DurationField(six.with_metaclass(models.SubfieldBase, Field)):
                 raise exceptions.ValidationError(self.default_error_messages['invalid'])
 
         raise exceptions.ValidationError(self.default_error_messages['unknown_type'])
+
+    def from_db_value(self, value, *args, **kwargs):
+        # For Django 1.10+
+        return self.to_python(value)
 
     def formfield(self, **kwargs):
         defaults = {'form_class': FDurationField}
