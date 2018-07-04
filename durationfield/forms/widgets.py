@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import VERSION
 from django.utils import six
 try:
     from django.forms.utils import flatatt
@@ -17,14 +18,17 @@ HOURS_PER_DAY = getattr(settings, "HOURS_PER_DAY", 24)
 
 
 class DurationInput(TextInput):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, **kwargs):
         """
         output.append(u'<li>%(cb)s<label%(for)s>%(label)s</label></li>' % {"for": label_for, "label": option_label, "cb": rendered_cb})
         """
         if value is None:
             value = ''
 
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        if VERSION[0] == 1 and VERSION[1] < 11:
+            final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        else:
+            final_attrs = self.build_attrs(base_attrs=attrs, extra_attrs={'name': name, 'type': self.input_type})
         if value != '':
             
             if isinstance(value, unicode):
@@ -44,7 +48,7 @@ class DurationInput(TextInput):
 
 
 class DurationByHourInput(DurationInput):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, **kwargs):
         attrs['hour_is_max_unit'] = True
         return super(DurationByHourInput, self).render(name, value, attrs)
 
