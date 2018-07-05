@@ -2,13 +2,16 @@
 from datetime import timedelta
 from django.core import exceptions
 from django.db.models.fields import Field
-from django.db import models
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_text
 
 from durationfield.utils.timestring import str_to_timedelta, timedelta_to_string
 from durationfield.forms.fields import DurationField as FDurationField
+
+from . import compat
+
+import decimal
 
 try:
     from south.modelsinspector import add_introspection_rules
@@ -85,6 +88,12 @@ class DurationField(Field):
         if isinstance(value, six.integer_types):
             return timedelta(microseconds=value)
 
+        # As of Django 1.10, it appears that during some aggregation operations
+        # we may receive decimal.Decimal instances via from_db_value.
+        # WARNING: potentially lossy conversion
+        if isinstance(value, decimal.Decimal):
+            return timedelta(microseconds=float(value))
+
         # Try to parse the value
         str_val = smart_text(value)
         if isinstance(str_val, six.string_types):
@@ -99,10 +108,17 @@ class DurationField(Field):
         # For Django 1.10+
         return self.to_python(value)
 
+    def contribute_to_class(self, cls, name):
+        # Retain to_python behaviour for < Django 1.8 with removal
+        # of SubfieldBase
+        super(DurationField, self).contribute_to_class(cls, name)
+        setattr(cls, name, compat.Creator(self))
+
     def formfield(self, **kwargs):
         defaults = {'form_class': FDurationField}
         defaults.update(kwargs)
         return super(DurationField, self).formfield(**defaults)
+
 
 if add_introspection_rules:
     # Rules for South field introspection
